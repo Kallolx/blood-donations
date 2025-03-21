@@ -101,7 +101,7 @@ const mockHospitalList: Hospital[] = [
   },
   {
     email: 'hospital5@example.com',
-    name: 'Children's Hospital',
+    name: "Children's Hospital",
     address: '654 Pediatric Lane, Careville',
     bloodGroup: 'O+',
     quantity: 500,
