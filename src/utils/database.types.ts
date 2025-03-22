@@ -1,59 +1,64 @@
-
 export type Database = {
   public: {
     Tables: {
-      donor_info: {
+      blood_donations: {
         Row: {
+          id: string;
           email: string;
           name: string;
-          bloodGroup: string;
+          blood_group: string;
           age: number;
-          phoneNumber: string;
-          created_at?: string;
+          phone_number: string;
+          created_at: string;
         };
         Insert: {
+          id?: string;
           email: string;
           name: string;
-          bloodGroup: string;
+          blood_group: string;
           age: number;
-          phoneNumber: string;
+          phone_number: string;
           created_at?: string;
         };
         Update: {
+          id?: string;
           email?: string;
           name?: string;
-          bloodGroup?: string;
+          blood_group?: string;
           age?: number;
-          phoneNumber?: string;
+          phone_number?: string;
           created_at?: string;
         };
       };
-      hospital_info: {
+      blood_requests: {
         Row: {
+          id: string;
           email: string;
           name: string;
           address: string;
-          bloodGroup: string;
+          blood_group: string;
           quantity: number;
-          urgency: 'High' | 'Medium' | 'Low';
-          created_at?: string;
+          urgency: string;
+          created_at: string;
         };
         Insert: {
+          id?: string;
           email: string;
           name: string;
           address: string;
-          bloodGroup: string;
+          blood_group: string;
           quantity: number;
-          urgency: 'High' | 'Medium' | 'Low';
+          urgency: string;
           created_at?: string;
         };
         Update: {
+          id?: string;
           email?: string;
           name?: string;
           address?: string;
-          bloodGroup?: string;
+          blood_group?: string;
           quantity?: number;
-          urgency?: 'High' | 'Medium' | 'Low';
+          urgency?: string;
           created_at?: string;
         };
       };

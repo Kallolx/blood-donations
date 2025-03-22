@@ -1,142 +1,103 @@
-
 import { SignUpData, LoginData, UserRole, Donor, Hospital } from './types';
 import { supabase } from './supabaseClient';
 import { toast } from 'sonner';
 
+interface AuthData {
+  email: string;
+  password: string;
+  role: UserRole;
+}
+
 // Authentication functions
-export const signUp = async (data: SignUpData): Promise<boolean> => {
+export const signUp = async (data: AuthData): Promise<boolean> => {
   try {
-    // First, create the auth user
-    const { error: authError } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
+      options: {
+        data: {
+          role: data.role
+        }
+      }
     });
-    
-    if (authError) {
-      toast.error(authError.message);
-      return false;
-    }
-    
-    // Then create the profile in the respective table
-    if (data.role === 'donor') {
-      const { error: donorError } = await supabase
-        .from('donor_info')
-        .insert({
-          email: data.email,
-          name: data.name,
-          bloodGroup: data.bloodGroup,
-          age: data.age,
-          phoneNumber: data.phoneNumber,
-        });
-      
-      if (donorError) {
-        toast.error(donorError.message);
-        return false;
-      }
-    } else if (data.role === 'hospital') {
-      const { error: hospitalError } = await supabase
-        .from('hospital_info')
-        .insert({
-          email: data.email,
-          name: data.name,
-          address: data.address,
-          bloodGroup: data.bloodGroup,
-          quantity: data.quantity,
-          urgency: data.urgency,
-        });
-      
-      if (hospitalError) {
-        toast.error(hospitalError.message);
-        return false;
-      }
-    }
-    
-    // Save user role to localStorage
-    localStorage.setItem('userRole', data.role);
-    
-    toast.success('Account created successfully! Please check your email to verify your account.');
+
+    if (error) throw error;
+
+    toast.success('Account created! Please check your email to verify your account.');
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Signup error:', error);
-    toast.error('Failed to create account. Please try again.');
+    toast.error(error.message || 'Failed to create account');
     return false;
   }
 };
 
-export const login = async (data: LoginData): Promise<boolean> => {
+export const login = async (data: AuthData): Promise<boolean> => {
   try {
-    // Sign in with Supabase auth
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     });
-    
-    if (authError) {
-      toast.error(authError.message);
-      return false;
+
+    if (error) throw error;
+
+    // Store the role in localStorage
+    if (authData?.user) {
+      localStorage.setItem('userRole', data.role);
     }
-    
-    // Verify the user exists in the respective table
-    if (data.role === 'donor') {
-      const { data: donorData, error: donorError } = await supabase
-        .from('donor_info')
-        .select('*')
-        .eq('email', data.email)
-        .single();
-      
-      if (donorError || !donorData) {
-        toast.error('User not found in donor database');
-        await supabase.auth.signOut();
-        return false;
-      }
-    } else if (data.role === 'hospital') {
-      const { data: hospitalData, error: hospitalError } = await supabase
-        .from('hospital_info')
-        .select('*')
-        .eq('email', data.email)
-        .single();
-      
-      if (hospitalError || !hospitalData) {
-        toast.error('User not found in hospital database');
-        await supabase.auth.signOut();
-        return false;
-      }
-    }
-    
-    // Save user role to localStorage
-    localStorage.setItem('userRole', data.role);
-    
-    toast.success('Logged in successfully!');
+
+    toast.success('Welcome back!');
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
-    toast.error('Failed to login. Please try again.');
+    toast.error(error.message || 'Failed to login');
     return false;
   }
 };
 
 export const logout = async (): Promise<void> => {
-  await supabase.auth.signOut();
-  localStorage.removeItem('userRole');
-  toast.success('Logged out successfully');
-};
-
-export const getCurrentUser = async (): Promise<{ role: UserRole | null, email: string | null }> => {
-  const { data } = await supabase.auth.getSession();
-  const email = data.session?.user?.email || null;
-  const role = localStorage.getItem('userRole') as UserRole | null;
-  
-  return { role, email };
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    
+    // Remove role from localStorage
+    localStorage.removeItem('userRole');
+    
+    toast.success('Logged out successfully');
+  } catch (error: any) {
+    console.error('Logout error:', error);
+    toast.error(error.message || 'Failed to logout');
+  }
 };
 
 export const isAuthenticated = async (): Promise<boolean> => {
-  const { data } = await supabase.auth.getSession();
-  return !!data.session;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
+  } catch (error) {
+    console.error('Auth check error:', error);
+    return false;
+  }
+};
+
+export const getCurrentUser = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  } catch (error) {
+    console.error('Get user error:', error);
+    return null;
+  }
+};
+
+export const getUserRole = (): UserRole | null => {
+  const role = localStorage.getItem('userRole') as UserRole;
+  return role || null;
 };
 
 export const getDonorData = async (email: string): Promise<Donor | null> => {
   const { data, error } = await supabase
-    .from('donor_info')
+    .from('blood_donations')
     .select('*')
     .eq('email', email)
     .single();
@@ -150,7 +111,7 @@ export const getDonorData = async (email: string): Promise<Donor | null> => {
 
 export const getHospitalData = async (email: string): Promise<Hospital | null> => {
   const { data, error } = await supabase
-    .from('hospital_info')
+    .from('blood_requests')
     .select('*')
     .eq('email', email)
     .single();
@@ -164,7 +125,7 @@ export const getHospitalData = async (email: string): Promise<Hospital | null> =
 
 export const getAllDonors = async (): Promise<Donor[]> => {
   const { data, error } = await supabase
-    .from('donor_info')
+    .from('blood_donations')
     .select('*');
   
   if (error || !data) {
@@ -176,7 +137,7 @@ export const getAllDonors = async (): Promise<Donor[]> => {
 
 export const getAllHospitals = async (): Promise<Hospital[]> => {
   const { data, error } = await supabase
-    .from('hospital_info')
+    .from('blood_requests')
     .select('*');
   
   if (error || !data) {
@@ -184,4 +145,18 @@ export const getAllHospitals = async (): Promise<Hospital[]> => {
   }
   
   return data as Hospital[];
+};
+
+// Add a function to handle auth state changes
+export const setupAuthListener = (navigate: (path: string) => void) => {
+  return supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN') {
+      const role = localStorage.getItem('userRole') as UserRole;
+      if (role) {
+        navigate('/');
+      }
+    } else if (event === 'SIGNED_OUT') {
+      navigate('/');
+    }
+  });
 };

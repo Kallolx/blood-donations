@@ -1,21 +1,24 @@
-
 export type UserRole = 'donor' | 'hospital';
 
 export interface Donor {
+  id?: string;
   email: string;
   name: string;
-  bloodGroup: string;
+  blood_group: string;
   age: number;
-  phoneNumber: string;
+  phone_number: string;
+  created_at?: string;
 }
 
 export interface Hospital {
+  id?: string;
   email: string;
   name: string;
   address: string;
-  bloodGroup: string;
+  blood_group: string;
   quantity: number;
-  urgency: 'High' | 'Medium' | 'Low';
+  urgency: string;
+  created_at?: string;
 }
 
 export interface AuthData {

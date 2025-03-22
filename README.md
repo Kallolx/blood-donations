@@ -1,69 +1,125 @@
-# Welcome to your Lovable project
+# BloodLink - Donor-Hospital Connection Platform
 
-## Project info
+A modern web application that connects blood donors with hospitals in need, facilitating the lifesaving process of blood donation.
 
-**URL**: https://lovable.dev/projects/1b88cfcc-5dc0-4446-9dd7-392fe06fbc66
+## Features
 
-## How can I edit this code?
+- **User Authentication:** Secure sign-up and login functionality
+- **Role-based Access:** Different interfaces for donors and hospitals
+- **Donor Dashboard:** Track your donation history and see impact metrics
+- **Hospital Dashboard:** View available donors and manage blood requests
+- **Real-time Updates:** Instant notifications for new donations and urgent requests
+- **Mobile Responsive:** Works seamlessly on all device sizes
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend:** React, TypeScript, TailwindCSS, Shadcn UI
+- **Backend:** Supabase (Auth, Database, Storage, Real-time subscriptions)
+- **State Management:** React Query, Context API
+- **Styling:** TailwindCSS with custom theme
+- **Icons:** Lucide React
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1b88cfcc-5dc0-4446-9dd7-392fe06fbc66) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js (v16+)
+- npm or yarn
+- Supabase account
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd donor-hospital-linkup
+   ```
 
-Follow these steps:
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. Create a `.env.local` file in the root directory with your Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+4. Set up Supabase tables:
+   - Run the SQL commands from `database-setup.sql` in your Supabase SQL Editor
+   - This will create the necessary tables and security policies
 
-# Step 3: Install the necessary dependencies.
-npm i
+5. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+6. Open your browser and navigate to `http://localhost:5173`
 
-**Edit a file directly in GitHub**
+## Database Schema
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The application uses two main tables:
 
-**Use GitHub Codespaces**
+### blood_donations
+- `id`: UUID (Primary Key)
+- `email`: TEXT (User's email)
+- `name`: TEXT (Donor's name)
+- `blood_group`: TEXT (A+, A-, B+, B-, AB+, AB-, O+, O-)
+- `age`: INTEGER (Donor's age)
+- `phone_number`: TEXT (Donor's contact number)
+- `created_at`: TIMESTAMP (When the donation was registered)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### blood_requests
+- `id`: UUID (Primary Key)
+- `email`: TEXT (Hospital's email)
+- `name`: TEXT (Hospital's name)
+- `address`: TEXT (Hospital's address)
+- `blood_group`: TEXT (A+, A-, B+, B-, AB+, AB-, O+, O-)
+- `quantity`: INTEGER (Units of blood needed)
+- `urgency`: TEXT (High, Medium, Low)
+- `created_at`: TIMESTAMP (When the request was created)
 
-## What technologies are used for this project?
+## User Flow
 
-This project is built with .
+1. **Authentication:**
+   - Users sign up with email and password
+   - Login directs to the appropriate dashboard
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+2. **Donor Experience:**
+   - View dashboard with donation statistics
+   - Submit blood donation information
+   - See urgent blood requests from hospitals
 
-## How can I deploy this project?
+3. **Hospital Experience:**
+   - View dashboard with available donors
+   - Create blood requests with urgency levels
+   - Contact donors directly via email or phone
 
-Simply open [Lovable](https://lovable.dev/projects/1b88cfcc-5dc0-4446-9dd7-392fe06fbc66) and click on Share -> Publish.
+## Security
 
-## I want to use a custom domain - is that possible?
+- Row Level Security (RLS) policies ensure users can only access and modify their own data
+- All pages requiring authentication are protected with route guards
+- Data validation is performed on both client and server sides
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Built with [Supabase](https://supabase.io/)
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
+- Icons from [Lucide React](https://lucide.dev/)

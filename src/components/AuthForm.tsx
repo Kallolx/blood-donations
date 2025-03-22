@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -21,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { UserRole, SignUpData, LoginData, bloodGroups, urgencyLevels } from '@/utils/types';
 import { signUp, login } from '@/utils/authService';
+import { Loader2, Heart, Hospital } from 'lucide-react';
 
 interface AuthFormProps {
   type: 'login' | 'signup';
@@ -91,7 +91,6 @@ const AuthForm = ({ type }: AuthFormProps) => {
       }
       
       if (success) {
-        // Redirect based on role
         if (role === 'donor') {
           navigate('/donor-dashboard');
         } else {
@@ -106,237 +105,249 @@ const AuthForm = ({ type }: AuthFormProps) => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto glass-panel animate-fade-in">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">
-          {type === 'login' ? 'Welcome Back' : 'Create an Account'}
-        </CardTitle>
-        <CardDescription className="text-center">
-          {type === 'login'
-            ? 'Enter your credentials to access your account'
-            : 'Fill in the details below to create your account'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="role">I am a</Label>
-            <Select
-              value={role}
-              onValueChange={(value: UserRole) => setRole(value)}
-            >
-              <SelectTrigger id="role" className="w-full">
-                <SelectValue placeholder="Select role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="donor">Blood Donor</SelectItem>
-                <SelectItem value="hospital">Hospital</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="min-h-screen w-full px-4 py-8 sm:px-6 sm:py-12 flex flex-col items-center justify-center bg-gradient-to-b from-white via-gray-50 to-white">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold font-dmsans text-gray-900 mb-3">
+            {type === 'login' ? 'Welcome Back' : 'Join BloodLink'}
+          </h1>
+          <p className="text-gray-600 font-poppins">
+            {type === 'login'
+              ? 'Sign in to continue saving lives'
+              : 'Create an account to start making a difference'}
+          </p>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Your email address"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="transition-all duration-300 focus:ring-2 focus:ring-blood-200"
-            />
-          </div>
+        <Card className="backdrop-blur-sm bg-white/80 border-blood-100/20 shadow-xl shadow-blood-500/5">
+          <CardHeader className="space-y-1 pb-6">
+            <div className="flex justify-center space-x-4">
+              <Button
+                type="button"
+                variant={role === 'donor' ? 'default' : 'outline'}
+                className={`flex-1 ${role === 'donor' ? 'bg-blood-500 hover:bg-blood-600' : ''}`}
+                onClick={() => setRole('donor')}
+              >
+                <Heart className={`h-4 w-4 mr-2 ${role === 'donor' ? 'text-white' : 'text-blood-500'}`} />
+                Donor
+              </Button>
+              <Button
+                type="button"
+                variant={role === 'hospital' ? 'default' : 'outline'}
+                className={`flex-1 ${role === 'hospital' ? 'bg-blood-500 hover:bg-blood-600' : ''}`}
+                onClick={() => setRole('hospital')}
+              >
+                <Hospital className={`h-4 w-4 mr-2 ${role === 'hospital' ? 'text-white' : 'text-blood-500'}`} />
+                Hospital
+              </Button>
+            </div>
+          </CardHeader>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Your password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="transition-all duration-300 focus:ring-2 focus:ring-blood-200"
-            />
-          </div>
-
-          {/* Additional fields for signup */}
-          {type === 'signup' && (
-            <>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">
-                  {role === 'donor' ? 'Full Name' : 'Hospital Name'}
-                </Label>
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
                 <Input
-                  id="name"
-                  placeholder={role === 'donor' ? 'Your full name' : 'Hospital name'}
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="transition-all duration-300 focus:ring-2 focus:ring-blood-200"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blood-200"
                 />
               </div>
 
-              {role === 'donor' ? (
-                // Donor-specific fields
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="bloodGroup">Blood Group</Label>
-                    <Select
-                      value={bloodGroup}
-                      onValueChange={setBloodGroup}
-                    >
-                      <SelectTrigger id="bloodGroup" className="w-full">
-                        <SelectValue placeholder="Select blood group" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {bloodGroups.map((group) => (
-                          <SelectItem key={group} value={group}>
-                            {group}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blood-200"
+                />
+              </div>
 
+              {type === 'signup' && (
+                <div className="space-y-4 animate-fade-down">
                   <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                      {role === 'donor' ? 'Full Name' : 'Hospital Name'}
+                    </Label>
                     <Input
-                      id="age"
-                      type="number"
-                      placeholder="Your age"
+                      id="name"
+                      placeholder={role === 'donor' ? 'John Doe' : 'City General Hospital'}
                       required
-                      min={18}
-                      value={age}
-                      onChange={(e) => setAge(e.target.value ? Number(e.target.value) : '')}
-                      className="transition-all duration-300 focus:ring-2 focus:ring-blood-200"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blood-200"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input
-                      id="phoneNumber"
-                      placeholder="Your phone number"
-                      required
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="transition-all duration-300 focus:ring-2 focus:ring-blood-200"
-                    />
-                  </div>
-                </>
-              ) : (
-                // Hospital-specific fields
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input
-                      id="address"
-                      placeholder="Hospital address"
-                      required
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      className="transition-all duration-300 focus:ring-2 focus:ring-blood-200"
-                    />
-                  </div>
+                  {role === 'donor' ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="bloodGroup" className="text-sm font-medium text-gray-700">Blood Group</Label>
+                          <Select
+                            value={bloodGroup}
+                            onValueChange={setBloodGroup}
+                          >
+                            <SelectTrigger id="bloodGroup" className="h-11">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {bloodGroups.map((group) => (
+                                <SelectItem key={group} value={group}>{group}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="bloodGroup">Blood Group Needed</Label>
-                    <Select
-                      value={bloodGroup}
-                      onValueChange={setBloodGroup}
-                    >
-                      <SelectTrigger id="bloodGroup" className="w-full">
-                        <SelectValue placeholder="Select blood group" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {bloodGroups.map((group) => (
-                          <SelectItem key={group} value={group}>
-                            {group}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="age" className="text-sm font-medium text-gray-700">Age</Label>
+                          <Input
+                            id="age"
+                            type="number"
+                            placeholder="25"
+                            required
+                            min={18}
+                            value={age}
+                            onChange={(e) => setAge(e.target.value ? Number(e.target.value) : '')}
+                            className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blood-200"
+                          />
+                        </div>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="quantity">Required Quantity (ml)</Label>
-                    <Input
-                      id="quantity"
-                      type="number"
-                      placeholder="Required quantity"
-                      required
-                      min={1}
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : '')}
-                      className="transition-all duration-300 focus:ring-2 focus:ring-blood-200"
-                    />
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">Phone Number</Label>
+                        <Input
+                          id="phoneNumber"
+                          placeholder="+1 (555) 000-0000"
+                          required
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blood-200"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="address" className="text-sm font-medium text-gray-700">Hospital Address</Label>
+                        <Input
+                          id="address"
+                          placeholder="123 Medical Center Dr"
+                          required
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blood-200"
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="urgency">Urgency Level</Label>
-                    <Select
-                      value={urgency}
-                      onValueChange={(value) => setUrgency(value as 'High' | 'Medium' | 'Low')}
-                    >
-                      <SelectTrigger id="urgency" className="w-full">
-                        <SelectValue placeholder="Select urgency level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {urgencyLevels.map((level) => (
-                          <SelectItem key={level} value={level}>
-                            {level}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="bloodGroup" className="text-sm font-medium text-gray-700">Blood Needed</Label>
+                          <Select
+                            value={bloodGroup}
+                            onValueChange={setBloodGroup}
+                          >
+                            <SelectTrigger id="bloodGroup" className="h-11">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {bloodGroups.map((group) => (
+                                <SelectItem key={group} value={group}>{group}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="quantity" className="text-sm font-medium text-gray-700">Quantity (ml)</Label>
+                          <Input
+                            id="quantity"
+                            type="number"
+                            placeholder="500"
+                            required
+                            min={1}
+                            value={quantity}
+                            onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : '')}
+                            className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blood-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="urgency" className="text-sm font-medium text-gray-700">Urgency Level</Label>
+                        <Select
+                          value={urgency}
+                          onValueChange={(value) => setUrgency(value as 'High' | 'Medium' | 'Low')}
+                        >
+                          <SelectTrigger id="urgency" className="h-11">
+                            <SelectValue placeholder="Select urgency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {urgencyLevels.map((level) => (
+                              <SelectItem key={level} value={level}>{level}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
-            </>
-          )}
 
-          <Button 
-            type="submit" 
-            className="w-full bg-blood-500 hover:bg-blood-600 transition-all duration-300"
-            disabled={loading}
-          >
-            {loading ? 
-              'Processing...' : 
-              type === 'login' ? 'Sign In' : 'Create Account'
-            }
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="flex flex-col space-y-2">
-        <div className="text-center text-sm">
-          {type === 'login' ? (
-            <div>
-              Don't have an account?{' '}
               <Button 
-                variant="link" 
-                className="p-0 h-auto text-blood-600 hover:text-blood-800"
-                onClick={() => navigate('/signup')}
+                type="submit" 
+                className="w-full h-11 bg-blood-500 hover:bg-blood-600 transition-all duration-300 mt-6"
+                disabled={loading}
               >
-                Sign up
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  <span>{type === 'login' ? 'Sign In' : 'Create Account'}</span>
+                )}
               </Button>
+            </form>
+          </CardContent>
+
+          <CardFooter className="pt-4 pb-6 text-center">
+            <div className="w-full text-sm text-gray-600">
+              {type === 'login' ? (
+                <div>
+                  New to BloodLink?{' '}
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto font-semibold text-blood-600 hover:text-blood-800"
+                    onClick={() => navigate('/signup')}
+                  >
+                    Create an account
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  Already have an account?{' '}
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto font-semibold text-blood-600 hover:text-blood-800"
+                    onClick={() => navigate('/login')}
+                  >
+                    Sign in
+                  </Button>
+                </div>
+              )}
             </div>
-          ) : (
-            <div>
-              Already have an account?{' '}
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-blood-600 hover:text-blood-800"
-                onClick={() => navigate('/login')}
-              >
-                Log in
-              </Button>
-            </div>
-          )}
-        </div>
-      </CardFooter>
-    </Card>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
   );
 };
 
